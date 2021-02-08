@@ -1,80 +1,23 @@
 const express = require("express");
-const db = require("../models");
-const moment = require("moment");
+const Workout = require("../models/workout");
 
 const router = express.Router();
 
-const statusOptions = ["On Time", "Late", "Cancelled"];
-
-/**
- * Route to render all trains to a page.
- */
-router.get("/trains", (req, res) => {
-	db.Train.findAll()
-		.then((allTrains) => {
-			// console.log(allTrains);
-			const formattedTrains = allTrains.map((train) => {
-				const formattedTrain = { ...train.dataValues };
-				formattedTrain.eta = moment(train.eta)
-					? moment(train.eta).format("MMMM Do YYYY, h:mm:ss a")
-					: "N/A";
-				return formattedTrain;
-			});
-			console.log(formattedTrains);
-			res.render("all-trains", { trains: formattedTrains });
+router.get("/api/workouts", (req, res) => {
+	Workout.find()
+		.then((allWorkouts) => {
+			res.json(allWorkouts);
 		})
 		.catch((err) => {
 			console.log(err);
-			//TODO: render 404 page if we're unable to return trains
 			res.status(500).end();
 		});
 });
 
-/**
- * Route to render the new train form.
- */
-router.get("/trains/new", (req, res) => {
-	const dataObject = {
-		options: [
-			{
-				display: "On Time",
-			},
-			{
-				display: "Late",
-			},
-			{
-				display: "Cancelled",
-			},
-		],
-	};
-	res.render("new-train", dataObject);
-});
-
-/**
- * Route to pull train data from the database
- * Render the train data to a pre-populate form.
- */
-router.get("/trains/:id/edit", (req, res) => {
-	db.Train.findOne({ where: { id: req.params.id } })
-		.then((singleTrain) => {
-			const dataObject = {
-				...singleTrain.dataValues,
-				options: [
-					{
-						display: "On Time",
-						selected: singleTrain.dataValues.status === "On Time",
-					},
-					{
-						display: "Late",
-						selected: singleTrain.dataValues.status === "Late",
-					},
-					{
-						display: "Cancelled",
-						selected: singleTrain.dataValues.status === "Cancelled",
-					},
-				],
-			};
-			res.render("edit-train", dataObject);
+router.get("/api/workouts/range", (req, res) => {
+	Place.findOne({ _id: req.params.id })
+		.then((singleWorkout) => {
+			res.json(singleWorkout);
 		})
 		.catch((err) => {
 			console.log(err);
@@ -82,74 +25,22 @@ router.get("/trains/:id/edit", (req, res) => {
 		});
 });
 
-/**
- * Display information about a single train.
- */
-router.get("/trains/:id", (req, res) => {
-	db.Train.findOne({
-		where: { id: req.params.id },
-	})
-		.then((singleTrain) => {
-			// console.log(singleTrain.dataValues);
-			res.render("single-train", singleTrain.dataValues);
+router.post("/api/workouts", (req, res) => {
+	Place.create(req.body)
+		.then((newWorkout) => {
+			res.json(newWorkout);
 		})
 		.catch((err) => {
 			console.log(err);
-			res.status(500).end();
+			res.status(400).end();
 		});
 });
 
-/**
- * API Route to create a new train.
- */
-router.post("/api/trains", (req, res) => {
-	if (statusOptions.includes(req.body.status)) {
-		db.Train.create(req.body)
-			.then((createdTrain) => {
-				res.json(createdTrain);
-			})
-			.catch((err) => {
-				console.log(err);
-				res.status(500).end();
-			});
-	} else {
-		res.status(400).end();
-	}
-});
-
-/**
- * API Route to update an existing train by ID
- */
-router.put("/api/trains/:id", (req, res) => {
-	if (statusOptions.includes(req.body.status)) {
-		db.Train.update(req.body, {
-			where: {
-				id: req.params.id,
-			},
-		})
-			.then((result) => {
-				res.json(result);
-			})
-			.catch((err) => {
-				console.log(err);
-				res.status(404).end();
-			});
-	} else {
-		res.status(400).end();
-	}
-});
-
-/**
- * API Route to delete a train by ID
- */
-router.delete("/api/trains/:id", (req, res) => {
-	db.Train.destroy({
-		where: {
-			id: req.params.id,
-		},
-	})
-		.then((result) => {
-			res.json(result);
+router.put("/api/workouts/:id", (req, res) => {
+	Place.findByIdAndUpdate(req.params.id, req.body, { new: true })
+		.then((updatedWorkout) => {
+			console.log(updatedWorkout);
+			res.json(updatedWorkout);
 		})
 		.catch((err) => {
 			console.log(err);
