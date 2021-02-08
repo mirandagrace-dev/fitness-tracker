@@ -2,7 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Workout = require("./models/Workout");
-const routes = require("./controllers/workoutController");
+const routes = require("./controllers/workoutsController.js");
 
 // Create an instance of Express and define a PORT
 const app = express();
