@@ -1,8 +1,8 @@
 // Require dependencies
 const express = require("express");
 const mongoose = require("mongoose");
-const Workout = require("./models/Workout");
-const routes = require("./controllers/workoutsController.js");
+const view = require("./routes/view");
+const api = require("./routes/api");
 
 // Create an instance of Express and define a PORT
 const app = express();
@@ -33,8 +33,9 @@ connection.on("error", (err) => {
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(routes);
 app.use(express.static("public"));
+app.use("/api", api);
+app.use("/", view);
 
 // Listen on the PORT
 app.listen(PORT, () => {
